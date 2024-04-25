@@ -39,11 +39,11 @@ class Task
     private ?string $status = null;
 
     /**
-     * @var Collection<int, Employee>
+     * @var Collection<int, User>
      */
-    #[ORM\ManyToMany(targetEntity: Employee::class, mappedBy: 'tasks', cascade: ['persist'])]
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'tasks', cascade: ['persist'])]
     #[Groups(['task:read', 'task:write'])]
-    private Collection $employees;
+    private Collection $users;
 
     #[ORM\OneToOne(targetEntity: WorkTime::class, mappedBy: 'task', cascade: ['persist', 'remove'])]
     #[Groups(['task:read', 'task:write'])]
@@ -51,7 +51,7 @@ class Task
 
     public function __construct()
     {
-        $this->employees = new ArrayCollection();
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -108,27 +108,27 @@ class Task
     }
 
     /**
-     * @return Collection<int, Employee>
+     * @return Collection<int, User>
      */
-    public function getEmployees(): Collection
+    public function getUsers(): Collection
     {
-        return $this->employees;
+        return $this->users;
     }
 
-    public function addEmployee(Employee $employee): static
+    public function addUser(User $user): static
     {
-        if (!$this->employees->contains($employee)) {
-            $this->employees->add($employee);
-            $employee->addTask($this);
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+            $user->addTask($this);
         }
 
         return $this;
     }
 
-    public function removeEmployee(Employee $employee): static
+    public function removeUser(User $user): static
     {
-        if ($this->employees->removeElement($employee)) {
-            $employee->removeTask($this);
+        if ($this->users->removeElement($user)) {
+            $user->removeTask($this);
         }
 
         return $this;
@@ -145,17 +145,17 @@ class Task
         return $this;
     }
 
-//    public function addEmployee(Employee $employee): self
+//    public function addUser(User $user): self
 //    {
-//        if (!$this->employees->contains($employee)) {
-//            $this->employees[] = $employee;
+//        if (!$this->users->contains($user)) {
+//            $this->users[] = $user;
 //        }
 //        return $this;
 //    }
 //
-//    public function removeEmployee(Employee $employee): self
+//    public function removeUser(User $user): self
 //    {
-//        $this->employees->removeElement($employee);
+//        $this->users->removeElement($user);
 //        return $this;
 //    }
 

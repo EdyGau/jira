@@ -2,8 +2,8 @@
 
 namespace App\Serializer;
 
-use App\Entity\Employee;
-use App\Serializer\Normalizer\EmployeeNormalizer;
+use App\Entity\User;
+use App\Serializer\Normalizer\UserNormalizer;
 use App\Serializer\Normalizer\TaskNormalizer;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
@@ -15,7 +15,7 @@ use Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
-class EmployeeSerializer
+class UserSerializer
 {
     private Serializer $serializer;
 
@@ -27,14 +27,14 @@ class EmployeeSerializer
                 null,
                 new MetadataAwareNameConverter()
             ),
-            new EmployeeNormalizer($taskNormalizer),
+            new UserNormalizer($taskNormalizer),
         ];
 
         $this->serializer = new Serializer($normalizers, $encoders);
     }
 
-    public function serialize(Employee $employee, string $format = 'json', array $context = []): string
+    public function serialize(User $user, string $format = 'json', array $context = []): string
     {
-        return $this->serializer->serialize($employee, $format, $context);
+        return $this->serializer->serialize($user, $format, $context);
     }
 }

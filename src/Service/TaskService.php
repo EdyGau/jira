@@ -4,22 +4,22 @@ namespace App\Service;
 
 use App\Entity\Task;
 use App\Entity\WorkTime;
-use App\Repository\EmployeeRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class TaskService
 {
     private EntityManagerInterface $entityManager;
-    private EmployeeRepository $employeeRepository;
+    private UserRepository $userRepository;
     private WorkTimeService $workTimeService;
-    private EmployeeService $employeeService;
+    private UserService $userService;
 
-    public function __construct(EntityManagerInterface $entityManager, EmployeeRepository $employeeRepository, WorkTimeService $workTimeService, EmployeeService $employeeService)
+    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, WorkTimeService $workTimeService, UserService $userService)
     {
         $this->entityManager = $entityManager;
-        $this->employeeRepository = $employeeRepository;
+        $this->userRepository = $userRepository;
         $this->workTimeService = $workTimeService;
-        $this->employeeService = $employeeService;
+        $this->userService = $userService;
     }
 
     /**
@@ -61,7 +61,7 @@ class TaskService
         $task->setStatus($data['status'] ?? $task->getStatus());
         $task->setPriority($data['priority'] ?? $task->getPriority());
 
-        $this->employeeService->addEmployeesToTask($task, $data['employees'] ?? []);
+        $this->userService->addUsersToTask($task, $data['users'] ?? []);
 
         return $task;
     }
@@ -106,13 +106,13 @@ class TaskService
         $task->setStatus($data['status'] ?? $task->getStatus());
         $task->setPriority($data['priority'] ?? $task->getPriority());
 
-//        $clearEmployees = $data['clearEmployees'] ?? false;
+//        $clearUsers = $data['clearUsers'] ?? false;
 //
-//        if ($clearEmployees) {
-//            $task->getEmployees()->clear();
+//        if ($clearUsers) {
+//            $task->getUsers()->clear();
 //        }
-        $this->employeeService->removeEmployeesFromTask($task, $data['clearEmployees'] ?? []);
-        $this->employeeService->addEmployeesToTask($task, $data['employees'] ?? []);
+        $this->userService->removeEmployeesFromTask($task, $data['clearUsers'] ?? []);
+        $this->userService->addUsersToTask($task, $data['users'] ?? []);
     }
 
 }

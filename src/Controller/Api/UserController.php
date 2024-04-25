@@ -2,10 +2,10 @@
 
 namespace App\Controller\Api;
 
-use App\Entity\Employee;
-use App\Repository\EmployeeRepository;
+use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Repository\TaskRepository;
-use App\Service\EmployeeService;
+use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,57 +14,57 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use OpenApi\Annotations as OA;
 
-#[Route('/api/v1/employees')]
-class EmployeeController extends AbstractController
+#[Route('/api/v1/users')]
+class UserController extends AbstractController
 {
     private SerializerInterface $serializer;
-    private EmployeeRepository $employeeRepository;
-    private EmployeeService $employeeService;
+    private UserRepository $employeeRepository;
+    private UserService $userService;
 
     public function __construct(
-        EmployeeRepository $employeeRepository,
+        UserRepository      $userRepository,
         SerializerInterface $serializer,
-        EmployeeService $employeeService
+        UserService $userService
     ) {
-        $this->employeeRepository = $employeeRepository;
+        $this->userRepository = $userRepository;
         $this->serializer = $serializer;
-        $this->employeeService = $employeeService;
+        $this->userService = $userService;
     }
 
     /**
      * @OA\Get(
-     *     summary="Get a list of employees",
+     *     summary="Get a list of users",
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             type="array",
-     *             @OA\Items(ref=@Model(type=Employee::class, groups={"employee:read"}))
+     *             @OA\Items(ref=@Model(type=Employee::class, groups={"user:read"}))
      *         )
      *     )
      * )
-     * @OA\Tag(name="Employees")
+     * @OA\Tag(name="Users")
      */
-    #[Route('/', name: 'app_employee_index', methods: ['GET'])]
+    #[Route('/', name: 'app_user_index', methods: ['GET'])]
     public function index(Request $request): JsonResponse
     {
-        $employees = $this->employeeRepository->findAll();
+        $users = $this->userRepository->findAll();
 
-        $data = $this->serializer->normalize($employees, null, ['groups' => 'employee:read']);
+        $data = $this->serializer->normalize($users, null, ['groups' => 'user:read']);
 
         return new JsonResponse($data, Response::HTTP_OK);
     }
 
     /**
      * @OA\Post(
-     *     summary="Add a new employee",
-     *     tags={"Employees"},
+     *     summary="Add a new user",
+     *     tags={"Users"},
      *     @OA\RequestBody(
-     *         @OA\JsonContent(ref=@Model(type=Employee::class))
+     *         @OA\JsonContent(ref=@Model(type=User::class))
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Employee added successfully",
+     *         description="User added successfully",
      *         @OA\JsonContent(type="object", @OA\Property(property="message", type="string"))
      *     ),
      *     @OA\Response(
@@ -74,13 +74,13 @@ class EmployeeController extends AbstractController
      *     )
      * )
      */
-    #[Route('/', name: 'app_employee_create', methods: ['POST'])]
-    public function create(Request $request, TaskRepository $taskRepository, EmployeeService $employeeService): Response
+    #[Route('/', name: 'app_user_create', methods: ['POST'])]
+    public function create(Request $request, TaskRepository $taskRepository): Response
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-            $response = $employeeService->createEmployee($data, $taskRepository);
+            $response = $this->userService->createUser($data, $taskRepository);
 
             return $this->json($response['data'], $response['status']);
         } catch (\Throwable $e) {
@@ -90,52 +90,52 @@ class EmployeeController extends AbstractController
 
     /**
      * @OA\Get(
-     *     summary="Get employee details",
+     *     summary="Get user details",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="ID of the employee",
+     *         description="ID of the user",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
-     *         @OA\JsonContent(ref="#/components/schemas/Employee")
+     *         @OA\JsonContent(ref="#/components/schemas/User")
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Employee not found"
+     *         description="User not found"
      *     )
      * )
-     * @OA\Tag(name="Employees")
+     * @OA\Tag(name="Users")
      */
-    #[Route('/{id}', name: 'app_employee_show', methods: ['GET'])]
-    public function show(Employee $employee): JsonResponse
+    #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
+    public function show(User $user): JsonResponse
     {
-        $data = $this->serializer->normalize($employee, null, ['groups' => 'employee:read']);
+        $data = $this->serializer->normalize($user, null, ['groups' => 'user:read']);
 
         return new JsonResponse($data);
     }
 
     /**
      * @OA\Put(
-     *     summary="Update an employee",
-     *     tags={"Employees"},
+     *     summary="Update an user",
+     *     tags={"Users"},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="ID of the employee to update",
+     *         description="ID of the user to update",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\RequestBody(
-     *         @OA\JsonContent(ref=@Model(type=Employee::class, groups={"employee:update"}))
+     *         @OA\JsonContent(ref=@Model(type=User::class, groups={"user:update"}))
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
-     *         @OA\JsonContent(ref="#/components/schemas/Employee")
+     *         @OA\JsonContent(ref="#/components/schemas/User")
      *     ),
      *     @OA\Response(
      *         response=400,
@@ -146,17 +146,17 @@ class EmployeeController extends AbstractController
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Employee not found"
+     *         description="User not found"
      *     )
      * )
      */
-    #[Route('/{id}', name: 'app_employee_update', methods: ['PUT'])]
-    public function update(Request $request, Employee $employee, TaskRepository $taskRepository, EmployeeService $employeeService): JsonResponse
+    #[Route('/{id}', name: 'app_user_update', methods: ['PUT'])]
+    public function update(Request $request, User $user, TaskRepository $taskRepository): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-            $response = $employeeService->updateEmployee($employee, $data, $taskRepository);
+            $response = $this->userService->updateUser($user, $data, $taskRepository);
 
             return new JsonResponse($response['data'], $response['status']);
         } catch (\Exception $e) {
@@ -165,40 +165,40 @@ class EmployeeController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="app_employee_delete", methods={"DELETE"})
+     * @Route("/{id}", name="app_user_delete", methods={"DELETE"})
      *
      * @OA\Delete(
-     *     summary="Delete an employee",
-     *     tags={"Employees"},
+     *     summary="Delete an user",
+     *     tags={"Users"},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="ID of the employee to delete",
+     *         description="ID of the user to delete",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Response(
      *         response=204,
-     *         description="Employee deleted successfully",
+     *         description="User deleted successfully",
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Failed to delete employee",
+     *         description="Failed to delete user",
      *         @OA\JsonContent(
      *             @OA\Property(property="error", type="string")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Employee not found"
+     *         description="User not found"
      *     )
      * )
      */
-    #[Route('/{id}', name: 'app_employee_delete', methods: ['DELETE'])]
-    public function delete(Employee $employee): JsonResponse
+    #[Route('/{id}', name: 'app_user_delete', methods: ['DELETE'])]
+    public function delete(User $user): JsonResponse
     {
         try {
-            $this->employeeService->deleteEmployee($employee);
+            $this->userService->deleteEmployee($user);
             return new JsonResponse(['message' => 'Employee deleted successfully'], Response::HTTP_NO_CONTENT);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => 'Failed to delete employee'], Response::HTTP_INTERNAL_SERVER_ERROR);

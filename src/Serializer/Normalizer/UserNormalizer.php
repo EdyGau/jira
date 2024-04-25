@@ -2,10 +2,10 @@
 
 namespace App\Serializer\Normalizer;
 
-use App\Entity\Employee;
+use App\Entity\User;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 
-class EmployeeNormalizer implements ContextAwareNormalizerInterface
+class UserNormalizer implements ContextAwareNormalizerInterface
 {
     private TaskNormalizer $taskNormalizer;
 
@@ -16,7 +16,7 @@ class EmployeeNormalizer implements ContextAwareNormalizerInterface
 
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
-        return $data instanceof Employee;
+        return $data instanceof User;
     }
 
     public function normalize($object, string $format = null, array $context = []): array
@@ -31,7 +31,7 @@ class EmployeeNormalizer implements ContextAwareNormalizerInterface
         if (isset($context['groups'])) {
             $groups = is_array($context['groups']) ? $context['groups'] : [$context['groups']];
 
-            if (in_array('employee:read', $groups)) {
+            if (in_array('user:read', $groups)) {
                 $tasks = $object->getTasks()->toArray();
                 $data['tasks'] = $this->normalizeTasks($tasks, $format, $context);
             }

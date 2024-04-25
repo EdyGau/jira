@@ -2,38 +2,38 @@
 
 namespace App\Service;
 
-use App\Entity\Employee;
+use App\Entity\User;
 use App\Entity\Task;
-use App\Repository\EmployeeRepository;
+use App\Repository\UserRepository;
 use App\Repository\TaskRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class EmployeeService
+class UserService
 {
     private EntityManagerInterface $entityManager;
-    private EmployeeRepository $employeeRepository;
+    private UserRepository $userRepository;
     private SerializerInterface $serializer;
 
-    public function __construct(EntityManagerInterface $entityManager, EmployeeRepository $employeeRepository, SerializerInterface $serializer)
+    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, SerializerInterface $serializer)
     {
         $this->entityManager = $entityManager;
-        $this->employeeRepository = $employeeRepository;
+        $this->userRepository = $userRepository;
         $this->serializer = $serializer;
     }
 
     /**
      * @param Task $task
-     * @param array $employeeIds
+     * @param array $userIds
      * @return void
      */
-    public function addEmployeesToTask(Task $task, array $employeeIds): void
+    public function addUsersToTask(Task $task, array $userIds): void
     {
-        foreach ($employeeIds as $employeeId) {
-            $employee = $this->employeeRepository->find($employeeId);
-            if ($employee) {
-                $task->addEmployee($employee);
+        foreach ($userIds as $userId) {
+            $user = $this->userRepository->find($userId);
+            if ($user) {
+                $task->addEmployee($user);
             }
         }
         $this->entityManager->flush();
@@ -41,15 +41,15 @@ class EmployeeService
 
     /**
      * @param Task $task
-     * @param array $employeeIds
+     * @param array $userIds
      * @return void
      */
-    public function removeEmployeesFromTask(Task $task, array $employeeIds): void
+    public function removeUserFromTask(Task $task, array $userIds): void
     {
-        foreach ($employeeIds as $employeeId) {
-            $employee = $this->employeeRepository->find($employeeId);
-            if ($employee) {
-                $task->removeEmployee($employee);
+        foreach ($userIds as $userId) {
+            $user = $this->userRepository->find($userId);
+            if ($user) {
+                $task->removeEmployee($user);
             }
         }
         $this->entityManager->flush();
@@ -60,37 +60,37 @@ class EmployeeService
      * @param TaskRepository $taskRepository
      * @return array
      */
-    public function createEmployee(array $data, TaskRepository $taskRepository): array
+    public function createUser(array $data, TaskRepository $taskRepository): array
     {
         try {
-            $existingEmployee = $this->employeeRepository->findOneBy(['email' => $data['email']]);
+            $existingUser = $this->userRepository->findOneBy(['email' => $data['email']]);
 
-            if ($existingEmployee) {
+            if ($existingUser) {
                 return [
-                    'data' => ['error' => 'Employee with this email already exists'],
+                    'data' => ['error' => 'User with this email already exists'],
                     'status' => Response::HTTP_BAD_REQUEST
                 ];
             }
 
-            $employee = new Employee();
-            $employee->setFirstName($data['firstName'] ?? '');
-            $employee->setLastName($data['lastName'] ?? '');
-            $employee->setEmail($data['email'] ?? '');
+            $user = new User();
+            $user->setFirstName($data['firstName'] ?? '');
+            $user->setLastName($data['lastName'] ?? '');
+            $user->setEmail($data['email'] ?? '');
 
             if (isset($data['tasks'])) {
                 foreach ($data['tasks'] as $taskId) {
                     $task = $taskRepository->findOneBy(['id' => $taskId]);
                     if ($task) {
-                        $employee->addTask($task);
+                        $user->addTask($task);
                     }
                 }
             }
 
-            $this->entityManager->persist($employee);
+            $this->entityManager->persist($user);
             $this->entityManager->flush();
 
             return [
-                'data' => ['message' => 'Employee added successfully'],
+                'data' => ['message' => 'User added successfully'],
                 'status' => Response::HTTP_CREATED
             ];
         } catch (\Throwable $e) {
@@ -102,29 +102,29 @@ class EmployeeService
     }
 
     /**
-     * @param Employee $employee
+     * @param User $employee
      * @param array $data
      * @param TaskRepository $taskRepository
      * @return array
      */
-    public function updateEmployee(Employee $employee, array $data, TaskRepository $taskRepository): array
+    public function updateEmployee(User $user, array $data, TaskRepository $taskRepository): array
     {
         try {
-            $employee->setFirstName($data['firstName'] ?? $employee->getFirstName());
-            $employee->setLastName($data['lastName'] ?? $employee->getLastName());
-            $employee->setEmail($data['email'] ?? $employee->getEmail());
+            $user->setFirstName($data['firstName'] ?? $user->getFirstName());
+            $user->setLastName($data['lastName'] ?? $user->getLastName());
+            $user->setEmail($data['email'] ?? $user->getEmail());
 
             $clearTasks = $data['clearTasks'] ?? false;
 
             if ($clearTasks) {
-                $employee->getTasks()->clear();
+                $user->getTasks()->clear();
             }
 
             if (isset($data['tasks']) && is_array($data['tasks'])) {
                 foreach ($data['tasks'] as $taskId) {
                     $task = $taskRepository->findOneBy(['id' => $taskId]);
                     if ($task) {
-                        $employee->addTask($task);
+                        $user->addTask($task);
                     }
                 }
             }
@@ -132,7 +132,7 @@ class EmployeeService
             $this->entityManager->flush();
 
             return [
-                'data' => $this->serializer->normalize($employee, null, ['groups' => 'employee:read']),
+                'data' => $this->serializer->normalize($user, null, ['groups' => 'user:read']),
                 'status' => Response::HTTP_OK
             ];
         } catch (\Exception $e) {
@@ -144,10 +144,10 @@ class EmployeeService
     }
 
     /**
-     * @param Employee $employee
+     * @param User $employee
      * @return void
      */
-    public function deleteEmployee(Employee $employee): void
+    public function deleteEmployee(User $user): void
     {
         $this->entityManager->remove($employee);
         $this->entityManager->flush();
