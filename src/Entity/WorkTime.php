@@ -49,9 +49,9 @@ class WorkTime
 //    #[Groups(['task:read', 'task:write', 'worktime:read', 'worktime:write'])]
 //    #[Groups(['task:read', 'task:write'])]
 //    #[Groups(['worktime:read', 'worktime:write'])]
-    #[ORM\OneToOne(targetEntity: Task::class)]
+    #[ORM\OneToOne(targetEntity: Operation::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Task $task;
+    private ?Operation $operation;
 
 //    #[Groups(['task:read', 'task:write', 'worktime:read', 'worktime:write'])]
 //    #[Groups(['worktime:read', 'worktime:write'])]
@@ -135,14 +135,14 @@ class WorkTime
         return $this;
     }
 
-    public function getTask(): ?Task
+    public function getOperation(): ?Operation
     {
-        return $this->task;
+        return $this->operation;
     }
 
-    public function setTask(?Task $task): self
+    public function setOperation(?Operation $operation): self
     {
-        $this->task = $task;
+        $this->operation = $operation;
         return $this;
     }
 

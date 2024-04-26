@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\Task;
+use App\Entity\Operation;
 use App\Entity\WorkTime;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -16,13 +16,13 @@ class WorkTimeService
     }
 
     /**
-     * Updates the WorkTime associated with the given Task.
-     * @param Task $task
+     * Updates the WorkTime associated with the given Operation.
+     * @param Operation $operation
      * @return void
      */
-    public function updateWorkTimeForTask(Task $task): void
+    public function updateWorkTimeForOperation(Operation $operation): void
     {
-        $workTime = $task->getWorkTime();
+        $workTime = $operation->getWorkTime();
         if ($workTime) {
             $now = new \DateTime();
             $workTime->setUpdatedDate($now);
@@ -34,12 +34,12 @@ class WorkTimeService
     /**
      * Updates the WorkTime associated with the given Task.
      *
-     * @param Task $task The task to update the WorkTime for.
+     * @param Operation $operation The operation to update the WorkTime for.
      * @return WorkTime|null The updated WorkTime entity.
      */
-    public function updateWorkTime(Task $task): ?WorkTime
+    public function updateWorkTime(Operation $operation): ?WorkTime
     {
-        $workTime = $task->getWorkTime();
+        $workTime = $operation->getWorkTime();
 
         if ($workTime) {
             $this->entityManager->persist($workTime);

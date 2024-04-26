@@ -3,23 +3,20 @@
 namespace App\Service;
 
 use App\Entity\Task;
-use App\Entity\WorkTime;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class TaskService
 {
     private EntityManagerInterface $entityManager;
-    private UserRepository $userRepository;
-    private WorkTimeService $workTimeService;
     private UserService $userService;
+    private OperationService $operationService;
 
-    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, WorkTimeService $workTimeService, UserService $userService)
+    public function __construct(EntityManagerInterface $entityManager, UserService $userService, OperationService $operationService)
     {
         $this->entityManager = $entityManager;
-        $this->userRepository = $userRepository;
-        $this->workTimeService = $workTimeService;
         $this->userService = $userService;
+        $this->operationService = $operationService;
     }
 
     /**
@@ -31,7 +28,7 @@ class TaskService
     public function createTask(array $data): Task
     {
         $task = $this->createTaskEntity($data);
-        $this->persistTaskAndWorkTime($task);
+        $this->persistTask($task);
         return $task;
     }
 
@@ -45,7 +42,6 @@ class TaskService
     public function updateTask(Task $task, array $data): Task
     {
         $this->updateTaskEntity($task, $data);
-        $this->workTimeService->updateWorkTimeForTask($task);
         return $task;
     }
 
@@ -62,6 +58,7 @@ class TaskService
         $task->setPriority($data['priority'] ?? $task->getPriority());
 
         $this->userService->addUsersToTask($task, $data['users'] ?? []);
+        $this->operationService->addOperationsToTask($task, $data['operations'] ?? []);
 
         return $task;
     }
@@ -81,15 +78,8 @@ class TaskService
      *
      * @param Task $task The task to persist.
      */
-    private function persistTaskAndWorkTime(Task $task): void
+    private function persistTask(Task $task): void
     {
-        $workTime = new WorkTime();
-        $workTime->setTask($task);
-
-        $now = new \DateTime();
-        $workTime->setCreationDate($now);
-
-        $this->entityManager->persist($workTime);
         $this->entityManager->persist($task);
         $this->entityManager->flush();
     }
@@ -111,8 +101,11 @@ class TaskService
 //        if ($clearUsers) {
 //            $task->getUsers()->clear();
 //        }
-        $this->userService->removeEmployeesFromTask($task, $data['clearUsers'] ?? []);
+        $this->userService->removeUserFromTask($task, $data['clearUsers'] ?? []);
         $this->userService->addUsersToTask($task, $data['users'] ?? []);
+
+        $this->operationService->removeOperationFromTask($task, $data['clearOperations'] ?? []);
+        $this->operationService->addOperationsToTask($task, $data['operations'] ?? []);
     }
 
 }

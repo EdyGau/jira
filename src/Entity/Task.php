@@ -5,10 +5,12 @@ namespace App\Entity;
 use App\Repository\TaskRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 //use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Metadata\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ApiResource(
@@ -21,6 +23,20 @@ class Task
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(type: "integer", nullable: true)]
+    private ?int $outerId = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
+    private ?string $productionOrderNumber = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    private ?\DateTimeInterface $deadlineFrom = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    private ?\DateTimeInterface $deadlineTo = null;
 
     #[ORM\Column(name: "name", unique: true)]
     #[Groups(['task:read', 'task:write'])]
@@ -45,13 +61,17 @@ class Task
     #[Groups(['task:read', 'task:write'])]
     private Collection $users;
 
-    #[ORM\OneToOne(targetEntity: WorkTime::class, mappedBy: 'task', cascade: ['persist', 'remove'])]
+    /**
+     * @var Collection<int, Operation>
+     */
+    #[ORM\ManyToMany(targetEntity: Operation::class, mappedBy: 'tasks', cascade: ['persist'])]
     #[Groups(['task:read', 'task:write'])]
-    private ?WorkTime $workTime = null;
+    private Collection $operations;
 
     public function __construct()
     {
         $this->users = new ArrayCollection();
+        $this->operations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -134,30 +154,76 @@ class Task
         return $this;
     }
 
-    public function getWorkTime(): ?WorkTime
+    public function addOperation(Operation $operation): static
     {
-        return $this->workTime;
-    }
+        if (!$this->operations->contains($operation)) {
+            $this->operations->add($operation);
+            $operation->addTask($this);
+        }
 
-    public function setWorkTime(?WorkTime $workTime): self
-    {
-        $this->workTime = $workTime;
         return $this;
     }
 
-//    public function addUser(User $user): self
-//    {
-//        if (!$this->users->contains($user)) {
-//            $this->users[] = $user;
-//        }
-//        return $this;
-//    }
-//
-//    public function removeUser(User $user): self
-//    {
-//        $this->users->removeElement($user);
-//        return $this;
-//    }
+    public function removeOperation(Operation $operation): static
+    {
+        if ($this->operations->removeElement($operation)) {
+            $operation->removeTask($this);
+        }
+
+        return $this;
+    }
+
+    public function getOuterId(): ?int
+    {
+        return $this->outerId;
+    }
+
+    public function setOuterId(string $outerId): self
+    {
+        $this->outerId = $outerId;
+
+        return $this;
+    }
+
+    public function getProductionOrderNumber(): ?string
+    {
+        return $this->productionOrderNumber;
+    }
+
+    public function setProductionOrderNumber(?string $productionOrderNumber): void
+    {
+        $this->productionOrderNumber = $productionOrderNumber;
+    }
+
+    public function getOperations(): ?string
+    {
+        return $this->operations;
+    }
+
+    public function setOperations(?string $operations): void
+    {
+        $this->operations = $operations;
+    }
+
+    public function getDeadlineFrom(): ?\DateTimeInterface
+    {
+        return $this->deadlineFrom;
+    }
+
+    public function setDeadlineFrom(?\DateTimeInterface $deadlineFrom): void
+    {
+        $this->deadlineFrom = $deadlineFrom;
+    }
+
+    public function getDeadlineTo(): ?\DateTimeInterface
+    {
+        return $this->deadlineTo;
+    }
+
+    public function setDeadlineTo(?\DateTimeInterface $deadlineTo): void
+    {
+        $this->deadlineTo = $deadlineTo;
+    }
 
     public function __toString(): string
     {

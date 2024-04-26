@@ -8,14 +8,14 @@ security:
         app_user_provider:
             entity:
                 class: App\Entity\User
-                property: email
+                property: firstName
     firewalls:
         login:
             pattern: ^/api/login
             stateless: true
             provider: app_user_provider
             json_login:
-                username_path: email
+                username_path: firstName
                 check_path: /api/login_check
                 success_handler:
                     lexik_jwt_authentication.handler.authentication_success

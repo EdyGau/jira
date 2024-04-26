@@ -19,7 +19,7 @@ use ApiPlatform\Metadata\ApiResource;
 #[ApiResource(
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']],
-    order: ['email' => 'ASC']
+    order: ['firstName' => 'ASC']
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -27,6 +27,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private ?int $id = null;
+
+//    TODO string or int?
+    #[ORM\Column(type: "integer", nullable: true)]
+    private ?int $outerId = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
@@ -98,16 +102,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getEmail(): ?string
+    public function getOuterId(): ?int
     {
-        return $this->email;
+        return $this->outerId;
     }
 
-    public function setEmail(string $email): self
+    public function setOuterId(string $outerId): self
     {
-        $this->email = $email;
+        $this->outerId = $outerId;
         return $this;
     }
+
+//    public function getEmail(): ?string
+//    {
+//        return $this->email;
+//    }
+//
+//    public function setEmail(string $email): self
+//    {
+//        $this->email = $email;
+//        return $this;
+//    }
 
     /**
      * A visual identifier that represents this user.
@@ -116,7 +131,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string) $this->firstName;
     }
 
     /**
@@ -127,7 +142,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
         return array_unique($roles);
     }

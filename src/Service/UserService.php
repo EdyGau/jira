@@ -33,7 +33,7 @@ class UserService
         foreach ($userIds as $userId) {
             $user = $this->userRepository->find($userId);
             if ($user) {
-                $task->addEmployee($user);
+                $task->addUser($user);
             }
         }
         $this->entityManager->flush();
@@ -49,7 +49,7 @@ class UserService
         foreach ($userIds as $userId) {
             $user = $this->userRepository->find($userId);
             if ($user) {
-                $task->removeEmployee($user);
+                $task->removeUser($user);
             }
         }
         $this->entityManager->flush();
